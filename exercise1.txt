@@ -1,0 +1,384 @@
+1. Behavioral Design Patterns
+Use Case 1: Observer Pattern
+Scenario: A news agency notifies its subscribers (observers) whenever there is a news update.
+import java.util.ArrayList;
+import java.util.List;
+
+// Observer interface
+interface Observer {
+    void update(String news);
+}
+
+// Concrete observer
+class Subscriber implements Observer {
+    private String name;
+
+    public Subscriber(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void update(String news) {
+        System.out.println(name + " received news: " + news);
+    }
+}
+
+// Subject interface
+interface Subject {
+    void registerObserver(Observer observer);
+    void removeObserver(Observer observer);
+    void notifyObservers();
+}
+
+// Concrete subject
+class NewsAgency implements Subject {
+    private List<Observer> observers = new ArrayList<>();
+    private String news;
+
+    @Override
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update(news);
+        }
+    }
+
+    public void setNews(String news) {
+        this.news = news;
+        notifyObservers();
+    }
+}
+
+// Client code
+public class ObserverPatternDemo {
+    public static void main(String[] args) {
+        NewsAgency agency = new NewsAgency();
+
+        Subscriber sub1 = new Subscriber("Subscriber 1");
+        Subscriber sub2 = new Subscriber("Subscriber 2");
+
+        agency.registerObserver(sub1);
+        agency.registerObserver(sub2);
+
+        agency.setNews("Breaking News!");
+    }
+}
+
+
+
+
+Use Case 2: Strategy Pattern
+Scenario: A payment system where the payment method (credit card, PayPal) can be changed dynamically.
+
+// Strategy interface
+interface PaymentStrategy {
+    void pay(int amount);
+}
+
+// Concrete strategy for credit card payment
+class CreditCardPayment implements PaymentStrategy {
+    private String cardNumber;
+
+    public CreditCardPayment(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    @Override
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using Credit Card.");
+    }
+}
+
+// Concrete strategy for PayPal payment
+class PayPalPayment implements PaymentStrategy {
+    private String email;
+
+    public PayPalPayment(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using PayPal.");
+    }
+}
+
+// Context
+class ShoppingCart {
+    private PaymentStrategy paymentStrategy;
+
+    public void setPaymentStrategy(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+
+    public void checkout(int amount) {
+        paymentStrategy.pay(amount);
+    }
+}
+
+// Client code
+public class StrategyPatternDemo {
+    public static void main(String[] args) {
+        ShoppingCart cart = new ShoppingCart();
+
+        cart.setPaymentStrategy(new CreditCardPayment("1234-5678-9012-3456"));
+        cart.checkout(100);
+
+        cart.setPaymentStrategy(new PayPalPayment("user@example.com"));
+        cart.checkout(200);
+    }
+}
+
+
+
+
+
+
+2. Creational Design Patterns
+Use Case 3: Singleton Pattern
+Scenario: A logging system where only one instance of the logger is used throughout the application.
+
+
+
+// Singleton Logger
+class Logger {
+    private static Logger instance;
+
+    private Logger() {}
+
+    public static Logger getInstance() {
+        if (instance == null) {
+            instance = new Logger();
+        }
+        return instance;
+    }
+
+    public void log(String message) {
+        System.out.println("Log: " + message);
+    }
+}
+
+// Client code
+public class SingletonPatternDemo {
+    public static void main(String[] args) {
+        Logger logger1 = Logger.getInstance();
+        Logger logger2 = Logger.getInstance();
+
+        logger1.log("This is a log message.");
+        System.out.println(logger1 == logger2); // Should print true
+    }
+}
+
+
+
+Use Case 4: Factory Pattern
+Scenario: A shape creation system where different types of shapes (circle, square) can be created without specifying the exact class
+
+
+
+
+
+// Shape interface
+interface Shape {
+    void draw();
+}
+
+// Concrete shapes
+class Circle implements Shape {
+    @Override
+    public void draw() {
+        System.out.println("Drawing Circle.");
+    }
+}
+
+class Square implements Shape {
+    @Override
+    public void draw() {
+        System.out.println("Drawing Square.");
+    }
+}
+
+// Factory class
+class ShapeFactory {
+    public static Shape createShape(String type) {
+        if (type.equalsIgnoreCase("circle")) {
+            return new Circle();
+        } else if (type.equalsIgnoreCase("square")) {
+            return new Square();
+        }
+        return null;
+    }
+}
+
+// Client code
+public class FactoryPatternDemo {
+    public static void main(String[] args) {
+        Shape shape1 = ShapeFactory.createShape("circle");
+        shape1.draw();
+
+        Shape shape2 = ShapeFactory.createShape("square");
+        shape2.draw();
+    }
+}
+
+
+
+3. Structural Design Patterns
+Use Case 5: Adapter Pattern
+Scenario: An audio player that can play mp3 files, but needs an adapter to play vlc files.
+
+
+// Target interface
+interface MediaPlayer {
+    void play(String audioType, String fileName);
+}
+
+// Adaptee
+interface AdvancedMediaPlayer {
+    void playVlc(String fileName);
+    void playMp4(String fileName);
+}
+
+// Concrete adaptee
+class VlcPlayer implements AdvancedMediaPlayer {
+    @Override
+    public void playVlc(String fileName) {
+        System.out.println("Playing vlc file. Name: " + fileName);
+    }
+
+    @Override
+    public void playMp4(String fileName) {
+        // Do nothing
+    }
+}
+
+// Adapter class
+class MediaAdapter implements MediaPlayer {
+    AdvancedMediaPlayer advancedMediaPlayer;
+
+    public MediaAdapter(String audioType) {
+        if (audioType.equalsIgnoreCase("vlc")) {
+            advancedMediaPlayer = new VlcPlayer();
+        } // Add more conditions for other media types
+    }
+
+    @Override
+    public void play(String audioType, String fileName) {
+        if (audioType.equalsIgnoreCase("vlc")) {
+            advancedMediaPlayer.playVlc(fileName);
+        }
+    }
+}
+
+// Concrete class implementing target interface
+class AudioPlayer implements MediaPlayer {
+    MediaAdapter mediaAdapter;
+
+    @Override
+    public void play(String audioType, String fileName) {
+        if (audioType.equalsIgnoreCase("mp3")) {
+            System.out.println("Playing mp3 file. Name: " + fileName);
+        } else if (audioType.equalsIgnoreCase("vlc")) {
+            mediaAdapter = new MediaAdapter(audioType);
+            mediaAdapter.play(audioType, fileName);
+        }
+    }
+}
+
+// Client code
+public class AdapterPatternDemo {
+    public static void main(String[] args) {
+        AudioPlayer audioPlayer = new AudioPlayer();
+
+        audioPlayer.play("mp3", "song.mp3");
+        audioPlayer.play("vlc", "movie.vlc");
+    }
+}
+
+
+
+Use Case 6: Decorator Pattern
+Scenario: A text editor where different decorators can be applied to text (bold, italic).
+
+
+
+// Component interface
+interface Text {
+    String format();
+}
+
+// Concrete component
+class PlainText implements Text {
+    private String text;
+
+    public PlainText(String text) {
+        this.text = text;
+    }
+
+    @Override
+    public String format() {
+        return text;
+    }
+}
+
+// Decorator
+abstract class TextDecorator implements Text {
+    protected Text decoratedText;
+
+    public TextDecorator(Text decoratedText) {
+        this.decoratedText = decoratedText;
+    }
+
+    public String format() {
+        return decoratedText.format();
+    }
+}
+
+// Concrete decorator
+class BoldText extends TextDecorator {
+    public BoldText(Text decoratedText) {
+        super(decoratedText);
+    }
+
+    @Override
+    public String format() {
+        return "<b>" + decoratedText.format() + "</b>";
+    }
+}
+
+class ItalicText extends TextDecorator {
+    public ItalicText(Text decoratedText) {
+        super(decoratedText);
+    }
+
+    @Override
+    public String format() {
+        return "<i>" + decoratedText.format() + "</i>";
+    }
+}
+
+// Client code
+public class DecoratorPatternDemo {
+    public static void main(String[] args) {
+        Text text = new PlainText("Hello, World!");
+
+        Text boldText = new BoldText(text);
+        Text italicText = new ItalicText(text);
+        Text boldItalicText = new BoldText(new ItalicText(text));
+
+        System.out.println(boldText.format());
+        System.out.println(italicText.format());
+        System.out.println(boldItalicText.format());
+    }
+}
+
+
